@@ -1,0 +1,221 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+
+/* Estilos base */
+:root {
+  --text-color: #2b2d42;
+  --light-color: #f8f9fa;
+  --danger-color: #ef233c;
+  --success-color: #4cc9f0;
+  --warning-color: #f8961e;
+  --border-radius: 5px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Roboto Condensed", sans-serif;
+}
+
+/* Classes de fundo condicional */
+.FundoAzul {
+  background-color: #344374;
+  color: white;
+}
+
+.FundoDescricaoSol {
+  background: linear-gradient(135deg, #ffb444 0%, #ff8126 100%);
+  color: #2b2d42;
+}
+
+.FundoDescricaoChuva {
+  background: linear-gradient(135deg, #4cc9f0 0%, #4895ef 100%);
+  color: white;
+}
+
+.FundoDescricaoParcialmenteNublado {
+  background: linear-gradient(135deg, #a7c4f2 0%, #7a9cc6 100%);
+  color: #2b2d42;
+}
+
+.FundoNublado {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  color: white;
+}
+
+.FundoNeblina {
+  background: linear-gradient(135deg, #dee2e6 0%, #adb5bd 100%);
+  color: #2b2d42;
+}
+
+.FundoDescricaoChuvaFraca {
+  background: linear-gradient(135deg, #90e0ef 0%, #48cae4 100%);
+  color: #2b2d42;
+}
+
+.FundoCeuLimpo {
+  background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%);
+  color: white;
+}
+
+/* Container principal */
+main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+/* Barra de pesquisa */
+.search-container {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.search-container input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.search-container input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2.5px rgba(67, 97, 238, 0.5);
+}
+
+.search-container button {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--light-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.search-container button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.search-container button:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--box-shadow);
+}
+
+/* Container do clima */
+.weather-container {
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.location {
+  display: flex;
+  align-items: center;justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.location h2 {
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+.main-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.main-info img {
+  width: 110px;
+  height: 110px;
+}
+
+.temp-cond {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.temperature {
+  font-size: 3.3rem;
+  font-weight: 700;
+}
+
+.condition {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.city-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  flex: 1;
+  min-width: 120px;
+}
+
+.update-time {
+  text-align: center;
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+/* Mensagens de estado */
+.loading-text, .error-text {
+  text-align: center;
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+}
+
+.loading-text {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.error-text {
+  background-color: rgba(239, 35, 60, 0.2);
+  color: var(--light-color);
+}
+
