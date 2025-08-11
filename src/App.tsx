@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import { format } from "date-fns";
 import { MapPin, Droplet, Wind, Sun, CloudRain, Thermometer, Search, Cloud } from "lucide-react";
 import './App.css';
 
@@ -8,32 +7,35 @@ interface WeatherResponse {
     location: {
         name: string;
         country: string;
+        localtime: Date;
     };
     current: {
         temp_c: number;
         feelslike_c: number;
         wind_kph: number;
+        last_updated: string;
         humidity: number;
         condition: {
             icon: string;
             text: string;
         };
     };
-    forecast?: {
+
+    forecast: {
         forecastday: Array<{
-            hour: Array<{
-                time: string;
-                temp_c: number;
-                chance_of_rain: number;
+            date: string;
+            day: {
+                maxtemp_c: number;
+                mintemp_c: number;
+                avgtemp_c: number;
                 condition: {
-                    icon: string;
                     text: string;
+                    icon: string;
                 };
-            }>;
+            };
         }>;
     };
 }
-
 
 export function Clima() {
     const [cidade, setCidade] = useState("");
@@ -48,41 +50,23 @@ export function Clima() {
             setIsLoading(true);
             setErro("");
             const apiKey = 'fe7af708db174cda86d161805252907';
-            const url = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${cidade}&days=1&aqi=no&alerts=no`;
+            const url = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${cidade}&days=7&aqi=no&alerts=no`;
             
             const resposta = await axios.get<WeatherResponse>(url);
             setWeatherData(resposta.data);
         } catch (error) {
             setErro('Cidade não encontrada');
             setWeatherData(null);
-        } 
+        } finally {
+            setIsLoading(false);
+        }
     }
 
-    const forecastHours = ['6:00 AM', '9:00 AM', '12:00 PM', '3:00 PM', '6:00 PM', '9:00 PM'];
-
-    const getHourData = (hourString: string) => {
-        if (!weatherData?.forecast) return null;
-        
-        return weatherData.forecast.forecastday[0].hour.find(h => {
-            const time = format(new Date(h.time), 'h:mm a');
-            return time === hourString;
-        });
-    };
-
-    const getWeatherIcon = (condition: string) => {
-        const lowerCondition = condition.toLowerCase();
-        
-        if (lowerCondition.includes('sun') || lowerCondition.includes('clear')) {
-            return <Sun size={24} />;
-        }
-        if (lowerCondition.includes('rain')) {
-            return <CloudRain size={24} />;
-        }
-        if (lowerCondition.includes('cloud')) {
-            return <Cloud size={24} />;
-        }
-        
-        return <Cloud size={24} />;
+    // Função para obter o nome do dia da semana
+    const getDayName = (dateString: string) => {
+        const date = new Date(dateString);
+        const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        return days[date.getDay()];
     };
 
     return (
@@ -112,43 +96,47 @@ export function Clima() {
                         <div className="location-header">
                             <div className="location-title">
                                 <span>{weatherData.location.name}, {weatherData.location.country}</span>
-                                <div className="weather-temp">
-                                    {weatherData.current.temp_c}°
-                                </div>
+                                
+                                <span>{weatherData.location.localtime}</span>
                             </div>
                             <div className="weather-temp-container">
                                 <div>
                                     <img 
-                                    className="weather-icon"
-                                    src={weatherData.current.condition.icon} 
-                                    alt={weatherData.current.condition.text}
+                                        className="weather-icon"
+                                        src={weatherData.current.condition.icon} 
+                                        alt={weatherData.current.condition.text}
                                     />
+                                    <div className="weather-temp">
+                                        {weatherData.current.temp_c}°
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Previsão horária */}
-                        <div className="hourly-forecast">
+                        {/* Previsão do tempo */}
+                        <div className="daily-forecast">
                             <h3 className="forecast-title">Previsão do tempo</h3>
                             <div className="forecast-grid">
-                                {forecastHours.map((hour, index) => {
-                                    const hourData = getHourData(hour);
-                                    return (
-                                        <div key={index} className="forecast-hour">
-                                            <span className="forecast-time">{hour.split(' ')[0]}</span>
-                                            {hourData && (
-                                                <img 
-                                                    src={hourData.condition.icon} 
-                                                    alt={hourData.condition.text}
-                                                    style={{ width: '70px', height: '70px' }}
-                                                />
-                                            )}
-                                            <span className="forecast-temp">
-                                                {hourData ? `${Math.round(hourData.temp_c)}°` : '--'}
+                                {weatherData.forecast.forecastday.map((day) => (
+                                    <div className="forecast-day">
+                                        <span className="forecast-dayname">
+                                            {getDayName(day.date)}
+                                        </span>
+                                        <img 
+                                            src={day.day.condition.icon} 
+                                            alt={day.day.condition.text}
+                                            className="forecast-icon"
+                                        />
+                                        <div className="forecast-temps">
+                                            <span className="forecast-max">
+                                                {day.day.maxtemp_c}°
+                                            </span>
+                                            <span className="forecast-min">
+                                                {day.day.mintemp_c}°
                                             </span>
                                         </div>
-                                    );
-                                })}
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
@@ -157,46 +145,43 @@ export function Clima() {
                             <h3 className="forecast-title">Condição do ar</h3>
                             <div className="conditions-grid">
                                 <div className="condition-card">
-                                <div className="condition-icon-label">
+                                    <div className="condition-icon-label">
                                         <div className="condition-icon">
                                             <Thermometer size={30} />
                                         </div>
-                                        <p className="condition-label">Real Feel</p>
+                                        <p className="condition-label">Sensação Térmica</p>
                                     </div>
-
                                     <p className="condition-value">{Math.round(weatherData.current.feelslike_c)}°</p>
                                 </div>
+                                
                                 <div className="condition-card">
                                     <div className="condition-icon-label">
                                         <div className="condition-icon">
-                                            <CloudRain size={30} />
+                                            <Droplet size={30} />
                                         </div>
-                                        <p className="condition-label">Chance of Rain</p>
+                                        <p className="condition-label">Umidade</p>
                                     </div>
-                                    
-                                    <p className="condition-value">
-                                        {getHourData('12:00 PM')?.chance_of_rain || 0}%
-                                    </p>
+                                    <p className="condition-value">{weatherData.current.humidity}%</p>
                                 </div>
+                                
                                 <div className="condition-card">
                                     <div className="condition-icon-label">
                                         <div className="condition-icon">
                                             <Wind size={30} />
                                         </div>
-                                        <p className="condition-label">Wind</p>
+                                        <p className="condition-label">Vento</p>
                                     </div>
-                                    
                                     <p className="condition-value">{weatherData.current.wind_kph} km/h</p>
                                 </div>
+                                
                                 <div className="condition-card">
                                     <div className="condition-icon-label">
                                         <div className="condition-icon">
-                                            <Sun size={30} />
+                                            <Cloud size={30} />
                                         </div>
-                                        <p className="condition-label">UV Index</p>
+                                        <p className="condition-label">Condição</p>
                                     </div>
-                                    
-                                    <p className="condition-value">3</p>
+                                    <p className="condition-value">{weatherData.current.condition.text}</p>
                                 </div>
                             </div>
                         </div>
