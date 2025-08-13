@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
-import { MapPin, Droplet, Wind, Sun, CloudRain, Thermometer, Search, Cloud } from "lucide-react";
+import { Droplet, Wind, Thermometer, Cloud } from "lucide-react";
+import { format } from "date-fns";
 import './App.css';
 
 interface WeatherResponse {
@@ -13,8 +14,8 @@ interface WeatherResponse {
         temp_c: number;
         feelslike_c: number;
         wind_kph: number;
-        last_updated: string;
         humidity: number;
+        last_updated: Date;
         condition: {
             icon: string;
             text: string;
@@ -68,127 +69,142 @@ export function Clima() {
         const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
         return days[date.getDay()];
     };
+    
+    const formattedLocalTime = weatherData ? format(new Date(weatherData.location.localtime), "HH:mm'"): '';
+    const formattedLastUpdated = weatherData ? format(new Date(weatherData.current.last_updated), "d'/'MM'/'yyyy, HH:mm"): '';
+
 
     return (
-        <main className="bg-weather-default">
-            <div className="weather-container">
-                {/* Barra de pesquisa */}
-                <div className="search-container">
-                    <input
-                        type="text"
-                        value={cidade}
-                        onChange={(e) => setCidade(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && buscarClima()}
-                        placeholder="Digite uma cidade"
-                        className="search-input"
-                    />
-                </div>
-
-                {erro && (
-                    <div className="error-state fade-in">
-                        {erro}
+        <>
+            <main className="bg-weather-default">
+                <div className="weather-container">
+                    {/* Search */}
+                    <div className="search-container">
+                        <input
+                            type="text"
+                            value={cidade}
+                            onChange={(e) => setCidade(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && buscarClima()}
+                            placeholder="Digite uma cidade"
+                            className="search-input"
+                        />
                     </div>
-                )}
 
-                {weatherData && (
-                    <div className="weather-card fade-in">
-                        {/* Cabeçalho com localização e temperatura atual */}
-                        <div className="location-header">
-                            <div className="location-title">
-                                <span>{weatherData.location.name}, {weatherData.location.country}</span>
-                                
-                                <span>{weatherData.location.localtime}</span>
-                            </div>
-                            <div className="weather-temp-container">
-                                <div>
+                    {erro && (
+                        <div className="error-state fade-in">
+                            {erro}
+                        </div>
+                    )}
+
+                    {weatherData && (
+                        <div className="weather-card fade-in">
+                            {/* Header with location and temperature*/}
+                            <header className="location-header">
+                                <div className="location-title">
+                                    <p>{weatherData.location.name}, {weatherData.location.country}</p>
+                                    
+                                    <p>{formattedLocalTime}</p>
+                                </div>
+                                <div className="weather-temp-container">
+                                    <div className="weather-temp">
+                                        {weatherData.current.temp_c}°
+                                    </div>
+
                                     <img 
                                         className="weather-icon"
                                         src={weatherData.current.condition.icon} 
                                         alt={weatherData.current.condition.text}
                                     />
-                                    <div className="weather-temp">
-                                        {weatherData.current.temp_c}°
-                                    </div>
                                 </div>
-                            </div>
-                        </div>
+                            </header>
 
-                        {/* Previsão do tempo */}
-                        <div className="daily-forecast">
-                            <h3 className="forecast-title">Previsão do tempo</h3>
-                            <div className="forecast-grid">
-                                {weatherData.forecast.forecastday.map((day) => (
-                                    <div className="forecast-day">
-                                        <span className="forecast-dayname">
-                                            {getDayName(day.date)}
-                                        </span>
-                                        <img 
-                                            src={day.day.condition.icon} 
-                                            alt={day.day.condition.text}
-                                            className="forecast-icon"
-                                        />
-                                        <div className="forecast-temps">
-                                            <span className="forecast-max">
-                                                {day.day.maxtemp_c}°
+                            {/* Weather Forecast */}
+                            <div className="daily-forecast">
+                                <h3 className="forecast-title">Previsão do tempo</h3>
+                                <div className="forecast-grid">
+                                    {weatherData.forecast.forecastday.map((day) => (
+                                        <div className="forecast-day">
+                                            <span className="forecast-dayname">
+                                                {getDayName(day.date)}
                                             </span>
-                                            <span className="forecast-min">
-                                                {day.day.mintemp_c}°
-                                            </span>
+                                            <img 
+                                                src={day.day.condition.icon} 
+                                                alt={day.day.condition.text}
+                                                className="forecast-icon"
+                                            />
+                                            <div className="forecast-temps">
+                                                <span className="forecast-max">
+                                                    {day.day.maxtemp_c}°
+                                                </span>
+                                                <span className="forecast-min">
+                                                    {day.day.mintemp_c}°
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Condições do ar */}
-                        <div className="air-conditions">
-                            <h3 className="forecast-title">Condição do ar</h3>
-                            <div className="conditions-grid">
-                                <div className="condition-card">
-                                    <div className="condition-icon-label">
-                                        <div className="condition-icon">
-                                            <Thermometer size={30} />
+                            {/* air condition */}
+                            <div className="air-conditions">
+                                <h3 className="forecast-title">Condição do ar</h3>
+                                <div className="conditions-grid">
+
+                                    {/* Feels like */}
+                                    <div className="condition-card">
+                                        <div className="condition-icon-label">
+                                            <div className="condition-icon">
+                                                <Thermometer size={30} />
+                                            </div>
+                                            <p className="condition-label">Sensação Térmica</p>
                                         </div>
-                                        <p className="condition-label">Sensação Térmica</p>
+                                        <p className="condition-value">{Math.round(weatherData.current.feelslike_c)}°</p>
                                     </div>
-                                    <p className="condition-value">{Math.round(weatherData.current.feelslike_c)}°</p>
-                                </div>
-                                
-                                <div className="condition-card">
-                                    <div className="condition-icon-label">
-                                        <div className="condition-icon">
-                                            <Droplet size={30} />
+                                    
+                                    {/* Humidity */}
+                                    <div className="condition-card">
+                                        <div className="condition-icon-label">
+                                            <div className="condition-icon">
+                                                <Droplet size={30} />
+                                            </div>
+                                            <p className="condition-label">Umidade</p>
                                         </div>
-                                        <p className="condition-label">Umidade</p>
+                                        <p className="condition-value">{weatherData.current.humidity}%</p>
                                     </div>
-                                    <p className="condition-value">{weatherData.current.humidity}%</p>
-                                </div>
-                                
-                                <div className="condition-card">
-                                    <div className="condition-icon-label">
-                                        <div className="condition-icon">
-                                            <Wind size={30} />
+                                    
+                                    {/* Wind speed */}
+                                    <div className="condition-card">
+                                        <div className="condition-icon-label">
+                                            <div className="condition-icon">
+                                                <Wind size={30} />
+                                            </div>
+                                            <p className="condition-label">Velocidade do vento</p>
                                         </div>
-                                        <p className="condition-label">Vento</p>
+                                        <p className="condition-value">{weatherData.current.wind_kph} km/h</p>
                                     </div>
-                                    <p className="condition-value">{weatherData.current.wind_kph} km/h</p>
-                                </div>
-                                
-                                <div className="condition-card">
-                                    <div className="condition-icon-label">
-                                        <div className="condition-icon">
-                                            <Cloud size={30} />
+                                    
+                                    {/* Condition describe */}
+                                    <div className="condition-card">
+                                        <div className="condition-icon-label">
+                                            <div className="condition-icon">
+                                                <Cloud size={30} />
+                                            </div>
+                                            <p className="condition-label">Condição</p>
                                         </div>
-                                        <p className="condition-label">Condição</p>
+                                        <p className="condition-value">{weatherData.current.condition.text}</p>
                                     </div>
-                                    <p className="condition-value">{weatherData.current.condition.text}</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </div>
-        </main>
+                    )}
+                </div>
+            </main>
+
+            {/* Footer */}
+            <footer>
+                <p>Última atualização: {formattedLastUpdated}</p>
+            </footer>  
+        </>
     );
 }
 
